@@ -130,12 +130,26 @@ You are auditing a single UI screen: "{screen_name}"
 {context_brief_from_phase_1}
 
 ## Your Task
-1. Use `get_design_context` on Figma node {node_id} to extract the design specification
+
+### Pass 1 — Structural audit
+1. Use `get_design_context` on the screen-level Figma node {node_id} to get the full design specification
 {if --screenshots: 2. Use `get_screenshot` on node {node_id} for Figma visual reference}
 {if --live: N. Navigate to {screen_url} using the Chrome DevTools MCP `navigate_page` tool, then use `take_screenshot` to capture the current live UI}
 N. Read the code file: {code_file_path}
-N. Compare the implementation against the Figma design
-N. Report ALL discrepancies in the structured format below
+N. Compare the implementation against the Figma design at a structural level
+N. Identify ALL discrepancies (see "What to Look For" below)
+
+### Pass 2 — Token extraction
+For each discrepancy found in Pass 1, drill into the specific child node to extract exact values:
+1. If you know the child node ID from the Pass 1 output, call `get_design_context` on that node directly
+2. If you don't have the child node ID, call `get_metadata` on the parent to find it, then call `get_design_context` on the child
+3. Record the **exact CSS/token values** from the output (e.g., `p-[4px]`, `rounded-[8px]`, `text-[14px]`, `gap-[12px]`, `#1E1E1E`, `font-medium`)
+
+**IMPORTANT — Exact tokens, not prose**: When reporting Design values, quote the raw token or CSS values directly from `get_design_context` output. Do NOT paraphrase. Example:
+- GOOD: `padding: 4px`, `border-radius: 8px`, `font-size: 14px / line-height: 20px`, `color: #1E1E1E`
+- BAD: "small padding", "slightly rounded corners", "medium-sized text", "dark text color"
+
+Report ALL discrepancies in the structured format below.
 
 ## What to Look For
 - **Spacing**: padding, margin, gap values
@@ -158,9 +172,10 @@ Use your judgment: if the code and design differ in a way that looks like a deli
 ## Report Format — QA Mode
 [qa only]
 For each discrepancy, report:
+- **Figma node**: the node ID of the specific element (e.g., `123:456`) — so follow-up agents or the user can fetch exact tokens autonomously
 - **Location**: file path + line number (or component/element description)
 - **Element**: what the discrepancy is on
-- **Design**: what Figma shows
+- **Design**: exact token/CSS values from `get_design_context` (not prose descriptions)
 - **Code**: what the implementation has
 - **Suggested fix**: the specific code change needed
 
@@ -172,14 +187,13 @@ Group findings by severity:
 ## Report Format — Revision Mode
 [revision only]
 For each discrepancy, report:
+- **Figma node**: the node ID of the specific element (e.g., `123:456`) — so follow-up agents or the user can fetch exact tokens autonomously
 - **Location**: file path + line number (or component/element description)
 - **Element**: what the discrepancy is on
 - **Classification**: design change | pre-existing inconsistency
-- **Design (new)**: what the updated Figma shows
+- **Design (new)**: exact token/CSS values from `get_design_context` (not prose descriptions)
 - **Code (current)**: what the implementation currently has
 - **Suggested fix**: the specific code change needed
-- **Effort**: trivial (token/value swap) | minor (small structural change) | major (significant rework)
-- **Blast radius**: isolated (this file only) | shared (affects a shared component/style/token)
 
 Group findings into two sections:
 1. **Design Changes** — the intentional updates from the revision
@@ -204,9 +218,10 @@ Format:
 ### Cross-Cutting Issues (fix once, applies everywhere)
 
 1. **[Description]**
+   - Figma nodes: [node IDs per screen]
    - Affected screens: [list]
    - Fix location: [shared file/class]
-   - Design: [what Figma shows]
+   - Design: [exact token/CSS values]
    - Code: [what's implemented]
    - Suggested fix: [specific change]
 ```
@@ -219,8 +234,9 @@ Format:
 ### Screen: [Name]
 
 1. **[Element] — [Description]**
+   - Figma node: [node ID]
    - Location: [file:line]
-   - Design: [what Figma shows]
+   - Design: [exact token/CSS values]
    - Code: [what's implemented]
    - Suggested fix: [specific change]
 ```
@@ -243,12 +259,12 @@ Format:
 ### Design System Changes (implement first — cascading impact)
 
 1. **[Description]**
+   - Figma nodes: [node IDs per screen]
    - Affected screens: [list]
    - Fix location: [shared file/class/token]
-   - Design (new): [what updated Figma shows]
+   - Design (new): [exact token/CSS values]
    - Code (current): [what's implemented]
    - Suggested fix: [specific change]
-   - Effort: [trivial | minor | major]
 ```
 
 ##### 2. Per-Screen Changes
@@ -260,14 +276,15 @@ Format:
 
 #### Design Changes
 1. **[Element] — [Description]**
+   - Figma node: [node ID]
    - Location: [file:line]
-   - Design (new): [what updated Figma shows]
+   - Design (new): [exact token/CSS values]
    - Code (current): [what's implemented]
    - Suggested fix: [specific change]
-   - Effort: [trivial | minor | major]
 
 #### Pre-Existing Inconsistencies (optional — address if convenient)
 1. **[Element] — [Description]**
+   - Figma node: [node ID]
    - Location: [file:line]
    - Note: [why this appears to be legacy drift rather than a new change]
 ```
