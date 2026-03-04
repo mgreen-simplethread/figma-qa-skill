@@ -48,14 +48,26 @@ https://figma.com/design/abc123/MyApp?node-id=42:300 -> header .user-menu
 
 ## Installation
 
-Copy or symlink the skill files into your project's `.claude/skills/` directory:
+Symlink both skills into your `.claude/skills/` directory using the install script:
 
 ```bash
-# Screen-level skill
-cp figma-qa-screen/SKILL.md /path/to/your-project/.claude/skills/figma-qa.md
+# Install globally (~/.claude/skills/)
+./install.sh
 
-# Component-level skill
-cp figma-qa-component/SKILL.md /path/to/your-project/.claude/skills/figma-qa-component.md
+# Install locally to a specific project
+./install.sh /path/to/your-project
 ```
+
+To remove:
+
+```bash
+# Uninstall from global skills
+./uninstall.sh
+
+# Uninstall from a specific project
+./uninstall.sh /path/to/your-project
+```
+
+## Prerequisites
 
 Both skills require the [Figma Desktop MCP server](https://www.npmjs.com/package/@anthropic-ai/claude-code-figma-mcp) to be configured. The component-level skill additionally requires the [Chrome DevTools MCP server](https://www.npmjs.com/package/@anthropic-ai/chrome-devtools-mcp).
